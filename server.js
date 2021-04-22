@@ -1150,6 +1150,10 @@ http.listen(4000, function () {
 			});
 		});
 
+		app.get("/createPage", function(request,result){
+			result.render("createPage");
+		});
+
 		app.post("/toggleJoinGroup", function (request, result) {
 			// Paid version only
 			// Please read README.txt to get full version.
