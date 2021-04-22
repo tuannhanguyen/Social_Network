@@ -1154,6 +1154,54 @@ http.listen(4000, function () {
 			result.render("createPage");
 		});
 
+		app.post("/createPage", function(request, result){
+			var accessToken = request.fields.accessToken;
+			var name = request.fields.name;
+			var domainName = request.fields.domainName;
+			var additionalInfo = request.fields.additionalInfo;
+			var coverPhoto = "";
+
+			database.collection("users").findOne({
+				"accessToken": accessToken
+			}, function(error, user){
+				if(user == null){
+					result.json({
+						"status": "error",
+						"message": "User has been logged out. Please login again."
+					});
+				} else{
+					if(request.files.coverPhoto.size > 0 && request.files.coverPhoto.type.includes("image")){
+						coverPhoto = "public/images/" + new Date().getTime() + "-" + request.files.coverPhoto.name;
+						fileSystem.rename(request.files.coverPhoto.path, coverPhoto, function(error){
+							//
+						});
+						database.collection("pages").insertOne({
+							"name": name,
+							"domainName": domainName,
+							"additionalInfo": additionalInfo,
+							"coverPhoto": coverPhoto,
+							"likers":[],
+							"user":{
+								"_id": user._id,
+								"name": user.name,
+								"profileImage": user.profileImage
+							}
+						}, function(error, data){
+							result.json({
+								"status": "success",
+								"message": "Page has been created."
+							});
+						});
+					} else{
+						result.json({
+							"status": "error",
+							"message": "Please select a cover photo"
+						});
+					}
+				}
+			});
+		});
+
 		app.post("/toggleJoinGroup", function (request, result) {
 			// Paid version only
 			// Please read README.txt to get full version.
